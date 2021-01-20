@@ -9,7 +9,7 @@ export default function App({ match }) {
   useEffect(() => {
     //fetchSpecificName('a');
     fetchAllNames(nextPageData);
-    console.log(match);
+    //console.log(match);
     console.log(page);
   }, []);
 
@@ -46,6 +46,7 @@ export default function App({ match }) {
     const newData = await fetchPage.json();
     setSwNames('');
     setSwNames(newData.results);
+
     //console.log(newData);
   };
 
@@ -53,7 +54,14 @@ export default function App({ match }) {
     <div>
       {swNames.map((item, index) => (
         <h1 key={index}>
-          <Link to={`/StarWars/${index + 1}`}>{item.name}</Link>
+          <Link
+            to={{
+              pathname: `/StarWars/${index + 1}`,
+              state: swNames[index],
+            }}
+          >
+            {item.name}
+          </Link>
         </h1>
       ))}
     </div>

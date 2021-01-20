@@ -1,25 +1,29 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export default function SwNamesDetail({ match }) {
   useEffect(() => {
-    fetchName();
+    fetchPerson();
+  }, []);
+
+  useEffect(() => {
     console.log(match);
   }, [match]);
 
-  const [swName, setSwName] = useState([]);
+  const [swPerson, setSwPerson] = useState([]);
+  const [swData, setSwData] = useState([]);
+  const [teste, setTeste] = useState(1);
+  const swNames = useLocation();
 
-  const fetchName = async (name) => {
+  const fetchPerson = async () => {
     const fetchItem = await fetch(
-      `https://swapi.dev/api/people/${match.params.id}/`
+      `https://swapi.dev/api/people/${match.params.id}/?format=json`
     );
-
     const data = await fetchItem.json();
-    console.log(data);
+
+    setSwPerson(data.name);
+    console.log(swPerson);
   };
 
-  return (
-    <div>
-      <h1>items</h1>
-    </div>
-  );
+  return <div>oi</div>;
 }
