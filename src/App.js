@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function App({ match }) {
@@ -6,15 +6,29 @@ export default function App({ match }) {
   const searchParams = new URLSearchParams(search);
   const page = searchParams.get('page');
 
+  const [swNames, setSwNames] = useState([]);
+  const [nextPageNumber, setnextPageNumber] = useState(1);
+  const [nextPage, SetNextPage] = useState(null);
+  const isMaxPage = useRef(false);
+
   useEffect(() => {
     //fetchSpecificName('a');
-    fetchAllNames(nextPageData);
-    //console.log(match);
-    console.log(page);
+    fetchAllNames(nextPageNumber);
+    console.log(match);
+    console.log('Paginação', page);
   }, []);
 
-  const [swNames, setSwNames] = useState([]);
-  const [nextPageData, setNextPageData] = useState(1);
+  useEffect(() => {
+    fetchPageButton();
+    fetchAllNames();
+  }, [nextPageNumber]);
+
+  const fetchPageButton = async () => {
+    const data = await fetch(`${nextPage}`);
+    const newPage = await data.json();
+    SetNextPage(newPage.next);
+    setSwNames(newPage.results);
+  };
 
   const fetchSpecificName = async (name) => {
     const data = await fetch(
@@ -23,17 +37,26 @@ export default function App({ match }) {
 
     const names = await data.json();
     setSwNames(names.results);
-    console.log(names.results);
   };
 
-  const fetchAllNames = async (pageNumber = 1) => {
+  const fetchAllNames = async () => {
     const data = await fetch(
-      `https://swapi.dev/api/people/?page=${pageNumber}&format=json`
+      `https://swapi.dev/api/people/?page=${nextPageNumber}&format=json`
     );
 
     const names = await data.json();
+    SetNextPage(names.next);
     setSwNames(names.results);
+    if (names.next === null) {
+      isMaxPage.current = true;
+    }
     console.log(names);
+  };
+
+  const handleButtonClick = (event) => {
+    event.preventDefault();
+    //console.log(nextPageNumber)
+    setnextPageNumber(nextPageNumber + 1);
   };
 
   //Disponibilizar um botão para next page
@@ -46,7 +69,6 @@ export default function App({ match }) {
     const newData = await fetchPage.json();
     setSwNames('');
     setSwNames(newData.results);
-
     //console.log(newData);
   };
 
@@ -54,16 +76,13 @@ export default function App({ match }) {
     <div>
       {swNames.map((item, index) => (
         <h1 key={index}>
-          <Link
-            to={{
-              pathname: `/StarWars/${index + 1}`,
-              state: swNames[index],
-            }}
-          >
-            {item.name}
-          </Link>
+          <Link to={`/StarWars/${index + 1}`}>{item.name}</Link>
         </h1>
       ))}
+      <button onClick={handleButtonClick} disabled={isMaxPage.current}>
+        Next Page
+      </button>
     </div>
+    //testing
   );
 }
